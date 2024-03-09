@@ -32,12 +32,29 @@ router.post("/insert", (req, res) => {
 //delete   -----***
 router.delete("/delete/:id", (req, res) => {
   let id = +req.params.id;
-  conn.query("DELETE FROM Person WHERE person_id = ?", [id], (err, result) => {
-     if (err) throw err;
-     res
-       .status(200)
-       .json({ affected_row: result.affectedRows });
-  });
+  
+  conn.query("DELETE FROM Star WHERE person_id = ?", [id], (err, result) => {
+          if (err) {
+              console.error("Error deleting Star:", err);
+              return res.status(500).json({ error: "Internal Server Error" });
+          }
+          deleteCreators();
+    });
+    function deleteCreators() {
+        conn.query("DELETE FROM Creators WHERE person_id = ?", [id], (err, result) => {
+          if (err) {
+              console.error("Error deleting Creators:", err);
+              return res.status(500).json({ error: "Internal Server Error" });
+              }
+              deletePerson();
+          });
+        }
+    function deletePerson() {
+        conn.query("DELETE FROM Person WHERE person_id = ?", [id], (err, result) => {
+          if (err) throw err;
+          res.status(200).json({ affected_row: result.affectedRows });
+        });
+    }
 });
 
 // //update
